@@ -1,7 +1,15 @@
 #!/usr/bin/python3
 # Netmic
 
-from struct import unpack
+
+from nettypes import EthernetFrame
+from nettypes import IPHeader
+from nettypes import TCPsegment
+from nettypes import UDPSegment
+
+
+from pcap import PCAPFile
+
 
 # Socket will do most of our heavy lifting.
 try:
@@ -9,43 +17,36 @@ try:
 except ImportError as error:
     print(error)
 
-#
-class EthernetFrame:
-    def __init__(self):
-        unpacked_data = unpack("!6s6sH", data[0:self.length])
-        self.protocol = socket.ntohs(unpacked_data)
-        self.destination = data[0:6]
-        self.source = data[6:12]
-        self.leftover_data = data[self.length]
-
 
 # Map processes with packets.
 class ProcessCapture:
     def __init__(self):
         pass
 
-# Temporary build of class that will store our collected packets.
-class PCAPFile:
-    def __init__(self, filename):
-        self.fp = open(filename, "wb")
-
-    def write(self, data):
-        self.fp.write(data)
-
-    def close(self):
-        self.fp.close()
-
-
 #
 def main():
     # Create socket connection.
     connection = socket.socket(socket.AF_PACKET, socket.SOCK_RAW, socket.ntohs(3))
 
+    pcap = PCAPFile('packets.pcap')
+
     # Listen until stopped.
     while True:
         raw_data, addr = connection.recvfrom(65535)
-        print(raw_data)
+        pcap.write(raw_data)
+        frame = EthernetFrame(raw_data)
+        # print(frame)
+        if frame.protocol == 8:
+            ipheader = IPHeader(frame.leftover_data)
+            print(ipheader)
+            if ipheader.protocol == 6:
+                tcp = TCPsegment(ipheader.leftover_data)
+                print(tcp)
+            elif ipheader.protocol == 17:
+                udp = UDPSegment(ipheader.leftover_data)
+                print(udp)
 
+    pcap.close()
     # Main
 
 
