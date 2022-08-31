@@ -1,6 +1,6 @@
 from struct import unpack
 import socket
-
+import utils
 
 
 class EthernetFrame:
@@ -57,11 +57,19 @@ class UDPSegment:
     def __str__(self):
         return """
         ...........   UDP Segment  ........... 
-        Source:    {src_port}
-        Destination: {dest_port}
-        Checksum: {checksum}
-        Data: {leftover_data}
+        Source:              {src_port}
+        Destination:        {dest_port}
+        Checksum:            {checksum}
+        Data:           {leftover_data}
         """.format(**self.__dict__)
+
+
+class UDPPayload:
+    def __init__(self, data):
+        self.payload = data
+
+    def __str__(self):
+        return str(self.payload)
 
 
 class TCPsegment:
@@ -87,12 +95,10 @@ class TCPsegment:
 
     def _parse_http_data(self, data):
         try:
-            return data.decde("utf 8")
+            return data.decode("utf 8")
         except Exception as e:
             return data
 
 
 def mac_addr(bytestring):
     return ":".join('{:02x}'.format(piece).upper() for piece in bytestring)
-
-def RunningProcess:
