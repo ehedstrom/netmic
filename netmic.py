@@ -1,35 +1,38 @@
 #!/usr/bin/python3
 # Netmic
 
-
-from nettypes import EthernetFrame
-from nettypes import IPHeader
-from nettypes import TCPsegment
-from nettypes import UDPSegment
-from nettypes import UDPPayload
-import time
-import utils
-
-import datetime
-
-from pcap import PCAPFile
-
-# Track unique devices.
-contacts = []
-
-
-
 # Socket will do most of our heavy lifting.
 try:
     import socket
 except ImportError as error:
     print(error)
 
+# Socket will do most of our heavy lifting.
+try:
+    import nettypes
+except ImportError as error:
+    print(error)
+
+import time
+from pcap import PCAPFile
+
+# Import local scripts
+import utils
+from nettypes import EthernetFrame
+from nettypes import IPHeader
+from nettypes import TCPsegment
+from nettypes import UDPSegment
+from nettypes import UDPPayload
+
+# Track unique devices.
+contacts = []
+
 
 # Map processes with packets.
 class ProcessCapture:
     def __init__(self):
         pass
+
 
 #
 def main():
@@ -45,23 +48,25 @@ def main():
 
     # Listen until stopped.
     while True:
+        # Waits until it receives a connection
         raw_data, addr = connection.recvfrom(65535)
 
+        # Add to current pcap
         pcap.write(raw_data)
 
         frame = EthernetFrame(raw_data)
 
-        # print(frame)
         if frame.protocol == 8:
+            # Extract the header.
             ipheader = IPHeader(frame.leftover_data)
-            # print(ipheader)
+
+            # Add unique addresses to contact list for tracking.
             if ipheader.source_addr not in contacts:
                 contacts.append(ipheader.source_addr)
                 ip_addr = ipheader.source_addr
                 dns_name = utils.get_dns(ipheader.source_addr)
-                machine = str(ip_addr) + " " + str(dns_name)
+                machine = "NEW:" + str(ip_addr) + " " + str(dns_name)
                 print(machine)
-
 
             if ipheader.protocol == 6:
                 tcp = TCPsegment(ipheader.leftover_data)
