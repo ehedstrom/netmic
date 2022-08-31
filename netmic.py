@@ -28,7 +28,7 @@ from nettypes import UDPPayload
 contacts = []
 
 
-# Map processes with packets.
+# Map processes with packets. Staged for now.
 class ProcessCapture:
     def __init__(self):
         pass
@@ -70,14 +70,12 @@ def main():
 
             if ipheader.protocol == 6:
                 tcp = TCPsegment(ipheader.leftover_data)
-                # print(tcp)
+
             elif ipheader.protocol == 17:
                 udp = UDPSegment(ipheader.leftover_data)
-                # print(udp)
                 payload = UDPPayload(udp.leftover_data)
 
         # Repeat List Every 30 Seconds. Append new.
-
 
 
     pcap.close()
