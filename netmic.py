@@ -38,7 +38,6 @@ class ProcessCapture:
 def main():
     # Start watch.
     stopwatch = time.time()
-    next_chirp = stopwatch + 30
 
     # Create socket connection.
     connection = socket.socket(socket.AF_PACKET, socket.SOCK_RAW, socket.ntohs(3))
@@ -54,6 +53,7 @@ def main():
         # Add to current pcap
         pcap.write(raw_data)
 
+        # Dump the raw data into a frame
         frame = EthernetFrame(raw_data)
 
         if frame.protocol == 8:
@@ -74,8 +74,10 @@ def main():
             elif ipheader.protocol == 17:
                 udp = UDPSegment(ipheader.leftover_data)
                 payload = UDPPayload(udp.leftover_data)
+                print(payload)
 
         # Repeat List Every 30 Seconds. Append new.
+
 
 
     pcap.close()

@@ -1,5 +1,8 @@
-# TODO Wrap this in a try.
-import dns.resolver
+try:
+    import dns.resolver
+except ImportError as error:
+    print(error)
+
 
 
 class Server:
@@ -19,18 +22,18 @@ class Contact:
 
 def get_dns(ip):
     # Create a new resolver using Google's public DNS.
-
     resolver = dns.resolver.Resolver()
 
     # This is a single point of failure.
-    resolver.nameservers = ["8.8.4.4"]
+    resolver.nameservers = ["8.8.8.8"]
 
     # Try to resolve, but fail quietly.
     try:
-        # sorted({resolver.resolve(ip)[0].address for i in range(4)})
         name = resolver.resolve(ip)
         return name
     except TypeError:
         return "Type Error"
+    except dns.exception.DNSException as e:
+        return e
 
 
